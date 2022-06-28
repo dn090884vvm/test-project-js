@@ -19,7 +19,7 @@ const API_BASE_URL = 'https://api.themoviedb.org/3/';
 // https://api.themoviedb.org/3/trending/all/day?api_key=<<api_key>>
 
 const API_KEY = '06cf6ee022a0922eb5200ae030143d7b';
-IMAGE_BASE_URL = 'https://image.tmdb.org/t/p/w1280';
+const IMAGE_BASE_URL = 'https://image.tmdb.org/t/p/w1280';
 
 async function getPopularMovies() {
   let data = [];

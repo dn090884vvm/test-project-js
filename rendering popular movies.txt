@@ -1,0 +1,70 @@
+const refs = {
+  inputForm: document.querySelector('#search-form'),
+  inputField: document.querySelector('input'),
+  searchButton: document.querySelector('button'),
+  galleryItems: document.querySelector('.gallery'),
+  continuouButton: document.querySelector('.load-more'),
+  moviesDiv: document.querySelector('#movies'),
+};
+
+// console.log(refs.moviesDiv);
+const API_BASE_URL = 'https://api.themoviedb.org/3/';
+// https://api.themoviedb.org/3/trending/all/day?api_key=<<api_key>>
+
+const API_KEY = '06cf6ee022a0922eb5200ae030143d7b';
+IMAGE_BASE_URL = 'https://image.tmdb.org/t/p/w1280';
+
+async function getPopularMovies(page = 1) {
+  let data = [];
+  try {
+    const response = await fetch(
+      //   `${API_BASE_URL}movie/popular?api_key=${API_KEY}&page=${page}`
+      `https://api.themoviedb.org/3/trending/all/day?api_key=${API_KEY}`
+    );
+    const responseData = await response.json();
+    // console.log(responseData);
+    //   data = responseData?.results;
+    data = responseData.results;
+  } catch (error) {
+    console.log(error);
+  }
+  return data;
+}
+
+async function renderMovies() {
+  const movies = await getPopularMovies();
+  console.log(movies);
+  refs.moviesDiv.innerHTML = movies
+    .map(movie => renderSingleMovie(movie))
+    .join('');
+}
+
+function renderSingleMovie(movie) {
+  return ` <div class="col-4 col-lg-3 col-xl-2 p-1">
+            <img src="${IMAGE_BASE_URL + movie.poster_path}" class="img-fluid" >
+        </div>`;
+}
+// IMAGE_BASE_URL + movie?.poster_path;
+function App(event) {
+  event.preventDefault();
+  renderMovies();
+  console.log(event.currentTarget.elements.searchQuery.value);
+}
+// App();
+refs.inputForm.addEventListener('submit', App);
+
+// function showImages(event) {
+//   gettingImages(event);
+// }
+
+// function gettingImages(event) {
+//   event.preventDefault();
+
+//   const requestValue = refs.inputField.value;
+
+//   getDatas()
+//     .then(response => {
+//       receivedDatas(response);
+//     })
+//     .catch(error => console.log(error.message));
+// }

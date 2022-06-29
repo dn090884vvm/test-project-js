@@ -8,6 +8,7 @@ const refs = {
   paginationDiv: document.querySelector('#pagination'),
   preButton: document.querySelector('.previous'),
   nextButton: document.querySelector('.next'),
+  movieCard: document.querySelector('.movie-card'),
 
   //   paginationForm: document.querySelector('.pagination-form'),
 };
@@ -48,8 +49,8 @@ async function getPopularMovies() {
 
 async function renderMovies() {
   const movies = await getPopularMovies();
-  console.log(movies);
-  console.log(movies.results);
+  console.log('this is movies=', movies);
+  console.log('this is movies.result=', movies.results);
   refs.moviesDiv.innerHTML = movies.results
     .map(movie => renderSingleMovie(movie))
     .join('');
@@ -61,7 +62,9 @@ async function renderMovies() {
 
 function renderSingleMovie(movie) {
   return ` <div class="col-4 col-lg-3 col-xl-2 p-1">
-            <img src="${IMAGE_BASE_URL + movie.poster_path}" class="img-fluid" >
+            <img src="${IMAGE_BASE_URL + movie.poster_path}" alt="${
+    movie.original_title
+  }" id ="${movie.id}" class="img-fluid" >
         </div>`;
 }
 
@@ -132,6 +135,54 @@ function prePages() {
   renderPaginationPages(startPage);
   renderMovies(currentPage);
 }
+
+refs.moviesDiv.addEventListener('click', getMovieInfo);
+
+function getMovieInfo(event) {
+  console.log(event.target.id);
+  renderMoviecard(event.target.id);
+}
+
+async function getCardInfo(filmID) {
+  //  let data = [];
+  try {
+    const response = await fetch(
+      `https://api.themoviedb.org/3/movie/${filmID}?api_key=${API_KEY}&language=en-US`
+    );
+    //   `${API_BASE_URL}movie/popular?api_key=${API_KEY}&page=${page}`
+    //  `https://api.themoviedb.org/3/trending/all/day?api_key=${API_KEY}&page=${currentPage}`
+
+    const responseData = await response.json();
+    // console.log(
+    //   'total pages=',
+    //   responseData.total_pages,
+    //   'total result=',
+    //   responseData.total_results
+    // );
+    // console.log(responseData);
+    //   data = responseData?.results;
+    // data = responseData.results;
+    data = responseData;
+  } catch (error) {
+    console.log(error);
+  }
+  return data;
+}
+
+async function renderMoviecard(filmID) {
+  const movieInfo = await getCardInfo(filmID);
+  console.log(movieInfo);
+  refs.movieCard.innerHTML = renderSingleMovieCard(movieInfo);
+}
+
+function renderSingleMovieCard(movieInfo) {
+  return `<article class='col-4 col-lg-3 col-xl-2 p-1'><img src="${
+    IMAGE_BASE_URL + movieInfo.poster_path
+  }" alt="${movieInfo.original_title}" id ="${
+    movieInfo.id
+  }" class="img-fluid" >${movieInfo.overview}<article>`;
+}
+
 // function showImages(event) {
 //   gettingImages(event);
 // }

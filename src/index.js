@@ -1,3 +1,7 @@
+import SimpleLightbox from 'simplelightbox';
+
+import 'simplelightbox/dist/simple-lightbox.min.css';
+
 const refs = {
   inputForm: document.querySelector('#search-form'),
   inputField: document.querySelector('input'),
@@ -9,6 +13,7 @@ const refs = {
   preButton: document.querySelector('.previous'),
   nextButton: document.querySelector('.next'),
   movieCard: document.querySelector('.movie-card'),
+  commonDiv: document.querySelector('.p-4'),
 
   //   paginationForm: document.querySelector('.pagination-form'),
 };
@@ -21,6 +26,7 @@ const API_BASE_URL = 'https://api.themoviedb.org/3/';
 
 const API_KEY = '06cf6ee022a0922eb5200ae030143d7b';
 const IMAGE_BASE_URL = 'https://image.tmdb.org/t/p/w1280';
+// const IMAGE_BASE_URL = 'https://image.tmdb.org/t/p/w500';
 
 async function getPopularMovies() {
   let data = [];
@@ -54,10 +60,16 @@ async function renderMovies() {
   refs.moviesDiv.innerHTML = movies.results
     .map(movie => renderSingleMovie(movie))
     .join('');
+
   // console.log(renderPaginationPages());
   refs.paginationDiv.innerHTML = renderPaginationPages()
     .map(page => `<button type='submit' value='${page}'>${page}</button>`)
     .join('');
+
+  //   const modalWin = new SimpleLightbox('.photo-card a', {
+  //     captionsData: 'alt',
+  //     captionDelay: 250,
+  //   });
 }
 
 function renderSingleMovie(movie) {
@@ -141,6 +153,10 @@ refs.moviesDiv.addEventListener('click', getMovieInfo);
 function getMovieInfo(event) {
   console.log(event.target.id);
   renderMoviecard(event.target.id);
+  //   const modalWin = new SimpleLightbox('.photo-card a', {
+  //     captionsData: 'alt',
+  //     captionDelay: 250,
+  //   });
 }
 
 async function getCardInfo(filmID) {
@@ -173,14 +189,23 @@ async function renderMoviecard(filmID) {
   const movieInfo = await getCardInfo(filmID);
   console.log(movieInfo);
   refs.movieCard.innerHTML = renderSingleMovieCard(movieInfo);
+  //   refs.commonDiv.classList.add('hidden');
+  //   const modalWin = new SimpleLightbox('.photo-card a', {
+  //     captionsData: 'alt',
+  //     captionDelay: 250,
+  //   });
 }
-
+{
+  /* <article class='col-4 col-lg-3 col-xl-2 p-1 photo-card'></article> */
+}
 function renderSingleMovieCard(movieInfo) {
-  return `<article class='col-4 col-lg-3 col-xl-2 p-1'><img src="${
+  return `<article class='photo-card'><a href="${
     IMAGE_BASE_URL + movieInfo.poster_path
-  }" alt="${movieInfo.original_title}" id ="${
-    movieInfo.id
-  }" class="img-fluid" >${movieInfo.overview}<article>`;
+  }""><img src="${IMAGE_BASE_URL + movieInfo.poster_path}" alt="${
+    movieInfo.original_title
+  }" id ="${movieInfo.id}" class="img-fluid" >${
+    movieInfo.overview
+  }</a><article>`;
 }
 
 // function showImages(event) {

@@ -30,3 +30,26 @@
 .hidden {
   display: none;
 }
+
+.common {
+  display: flex;
+}
+
+.p-4 {
+  width: 4000px;
+}
+
+.movie-card {
+  width: 2000px;
+}
+
+.photo-card {
+  // width: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+.img-fluid {
+  width: 400px;
+  height: 400px;
+}

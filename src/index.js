@@ -160,7 +160,7 @@ function getMovieInfo(event) {
 }
 
 async function getCardInfo(filmID) {
-  //  let data = [];
+  let data;
   try {
     const response = await fetch(
       `https://api.themoviedb.org/3/movie/${filmID}?api_key=${API_KEY}&language=en-US`
@@ -178,7 +178,7 @@ async function getCardInfo(filmID) {
     // console.log(responseData);
     //   data = responseData?.results;
     // data = responseData.results;
-    const data = responseData;
+    data = responseData;
   } catch (error) {
     console.log(error);
   }

@@ -178,7 +178,7 @@ async function getCardInfo(filmID) {
     // console.log(responseData);
     //   data = responseData?.results;
     // data = responseData.results;
-    data = responseData;
+    const data = responseData;
   } catch (error) {
     console.log(error);
   }

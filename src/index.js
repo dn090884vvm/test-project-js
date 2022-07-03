@@ -57,6 +57,10 @@ async function renderMovies() {
   const movies = await getPopularMovies();
   console.log('this is movies=', movies);
   console.log('this is movies.result=', movies.results);
+
+  // const additionalMovieInfo = await getCardInfo(movies.id);
+  // console.log(additionalMovieInfo);
+
   refs.moviesDiv.innerHTML = movies.results
     .map(movie => renderSingleMovie(movie))
     .join('');
@@ -72,12 +76,48 @@ async function renderMovies() {
   //   });
 }
 
+function mapGenres(genres) {
+  // console.log(genres);
+  const genresList = genres.map(genre => `${genre.name}`).join(',');
+  console.log(genresList);
+  return genresList;
+}
+
 function renderSingleMovie(movie) {
-  return ` <div class="col-4 col-lg-3 col-xl-2 p-1">
+  // const additionalMovieInfo = await getGenres(movie.id);
+  // console.log(additionalMovieInfo);
+  // console.log(movie.id);
+  // await getAdditionalCardInfo(movie.id);
+  // console.log(additionalMovieInfo);
+  // const aaa = getGenres(movie.id).map(genres => `${genres}`.join(''));
+  const aaa = '';
+  getGenres(movie.id)
+    .then(genres => mapGenres(genres))
+    .then(list => console.log(list))
+    .catch();
+  let movieYear;
+  if (movie.release_date) {
+    movieYear = Number.parseInt(movie.release_date);
+  } else {
+    movieYear = Number.parseInt(movie.first_air_date);
+  }
+
+  if (movie.name) {
+    return ` <div class="col-4 col-lg-3 col-xl-2 p-1">
             <img src="${IMAGE_BASE_URL + movie.poster_path}" alt="${
-    movie.original_title
-  }" id ="${movie.id}" class="img-fluid" >
+      movie.original_title
+    }" id ="${movie.id}" class="img-fluid" ><p>${
+      movie.name
+    }</p><p>${movieYear}</p><p>${aaa}</p>
         </div>`;
+  } else {
+    return ` <div class="col-4 col-lg-3 col-xl-2 p-1">
+            <img src="${IMAGE_BASE_URL + movie.poster_path}" alt="${
+      movie.original_title
+    }" id ="${movie.id}" class="img-fluid" ><p>${movie.original_title}</p>
+    <p>${movieYear}</p><p>${aaa}</p>
+        </div>`;
+  }
 }
 
 function renderPaginationPages() {
@@ -159,6 +199,23 @@ function getMovieInfo(event) {
   //   });
 }
 
+async function getGenres(filmID) {
+  let data;
+  try {
+    const response = await fetch(
+      `https://api.themoviedb.org/3/movie/${filmID}?api_key=${API_KEY}&language=en-US`
+    );
+
+    const responseData = await response.json();
+
+    data = responseData.genres;
+  } catch (error) {
+    console.log(error);
+  }
+  // console.log(data);
+  return data;
+}
+
 async function getCardInfo(filmID) {
   let data;
   try {
@@ -179,6 +236,7 @@ async function getCardInfo(filmID) {
     //   data = responseData?.results;
     // data = responseData.results;
     data = responseData;
+    // console.log(data);
   } catch (error) {
     console.log(error);
   }

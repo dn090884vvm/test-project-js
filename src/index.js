@@ -52,15 +52,22 @@ async function getPopularMovies() {
   }
   return data;
 }
-
+const ar = [];
 async function renderMovies() {
   const movies = await getPopularMovies();
   console.log('this is movies=', movies);
   console.log('this is movies.result=', movies.results);
 
+  movies.results.forEach(element => {
+    ar.push(element.id);
+  });
+  console.log(ar);
+
+  // const genres = await getGenres(movies.id);
+
   // const additionalMovieInfo = await getCardInfo(movies.id);
   // console.log(additionalMovieInfo);
-
+  // console.log(array);
   refs.moviesDiv.innerHTML = movies.results
     .map(movie => renderSingleMovie(movie))
     .join('');
@@ -78,23 +85,44 @@ async function renderMovies() {
 
 function mapGenres(genres) {
   // console.log(genres);
+  // const array = [];
+  // for (let i = 0; i < 2; i += 1) {
+  //   array.push(genres.name[i]);
+  // }
   const genresList = genres.map(genre => `${genre.name}`).join(',');
-  console.log(genresList);
+  // console.log(genresList);
+  // const genresList = array.map(element => `${element}`).join(',');
   return genresList;
 }
 
 function renderSingleMovie(movie) {
-  // const additionalMovieInfo = await getGenres(movie.id);
-  // console.log(additionalMovieInfo);
-  // console.log(movie.id);
-  // await getAdditionalCardInfo(movie.id);
-  // console.log(additionalMovieInfo);
-  // const aaa = getGenres(movie.id).map(genres => `${genres}`.join(''));
-  const aaa = '';
-  getGenres(movie.id)
-    .then(genres => mapGenres(genres))
-    .then(list => console.log(list))
-    .catch();
+  console.log(movie.id);
+  // console.log(movie.genre_ids.length);
+  // console.log('inside', genresList);
+  console.log(movie.genre_ids);
+  // const genresName = movie.genre_ids.map(el => genresList[el]);
+  const genresName = [];
+  movie.genre_ids.forEach(el => {
+    if (genresList[el]) {
+      genresName.push(genresList[el]);
+    }
+  });
+
+  if (genresName.length === 0) {
+    genresName.push('N/A');
+  }
+  if (genresName.length > 3) {
+    genresName.splice(3);
+    genresName[2] = 'Other';
+  }
+  console.log(genresName);
+
+  const listOfGenres = genresName.map(el => `${el}`).join(', ');
+  console.log(listOfGenres);
+  // let listOfGenres = movie.genre_ids.map(el => `${el}`).join(',');
+  // console.log(listOfGenres);
+  // console.log(movie.genre_ids);
+
   let movieYear;
   if (movie.release_date) {
     movieYear = Number.parseInt(movie.release_date);
@@ -108,14 +136,14 @@ function renderSingleMovie(movie) {
       movie.original_title
     }" id ="${movie.id}" class="img-fluid" ><p>${
       movie.name
-    }</p><p>${movieYear}</p><p>${aaa}</p>
+    }</p><p>${listOfGenres} | ${movieYear}</p>
         </div>`;
   } else {
     return ` <div class="col-4 col-lg-3 col-xl-2 p-1">
             <img src="${IMAGE_BASE_URL + movie.poster_path}" alt="${
       movie.original_title
     }" id ="${movie.id}" class="img-fluid" ><p>${movie.original_title}</p>
-    <p>${movieYear}</p><p>${aaa}</p>
+    <p>${listOfGenres} | ${movieYear}</p>
         </div>`;
   }
 }
@@ -198,21 +226,40 @@ function getMovieInfo(event) {
   //     captionDelay: 250,
   //   });
 }
+//========getting list of movies=====
+const genresList = {};
+getGenres().then(data => makingGenresList(data));
+
+function makingGenresList(List) {
+  List.forEach(el => {
+    genresList[el.id] = el.name;
+  });
+}
+
+console.log('eto', genresList);
+
+//================
 
 async function getGenres(filmID) {
   let data;
   try {
     const response = await fetch(
-      `https://api.themoviedb.org/3/movie/${filmID}?api_key=${API_KEY}&language=en-US`
+      // `https://api.themoviedb.org/3/movie/${filmID}?api_key=${API_KEY}&language=en-US`
+      `https://api.themoviedb.org/3/genre/movie/list?api_key=${API_KEY}`
     );
 
     const responseData = await response.json();
-
+    // console.log(responseData);
+    // data = responseData.genres.map(genre => genre.name).join(',');
     data = responseData.genres;
   } catch (error) {
     console.log(error);
   }
-  // console.log(data);
+  // console.log('DATA IS', data);
+  // array.push(data);
+  // console.log(array);
+  // return array;
+
   return data;
 }
 
@@ -243,10 +290,59 @@ async function getCardInfo(filmID) {
   return data;
 }
 
+async function getTrailer(filmID) {
+  let data;
+  try {
+    const response = await fetch(
+      // `https://api.themoviedb.org/3/movie/${filmID}?api_key=${API_KEY}&language=en-US`
+      `https://api.themoviedb.org/3/movie/${filmID}/videos?api_key=${API_KEY}&language=en-US`
+    );
+
+    const responseData = await response.json();
+
+    data = responseData;
+  } catch (error) {
+    console.log(error);
+  }
+  return data;
+}
+
 async function renderMoviecard(filmID) {
   const movieInfo = await getCardInfo(filmID);
-  console.log(movieInfo);
-  refs.movieCard.innerHTML = renderSingleMovieCard(movieInfo);
+  console.log('sdfsf', movieInfo);
+  const trailer = await getTrailer(filmID);
+  console.log('trailer is', trailer.results);
+
+  let offTrailer;
+
+  if (trailer.success === false) {
+    console.log('AAAAAAA');
+    offTrailer = 'n4rhAy3ueVE'; //cats video
+  } else {
+    // let offTrailer;
+    const trailerResult = trailer.results.find(trailer => {
+      if (
+        trailer.name.includes('Official') ||
+        trailer.name.includes('Trailer') ||
+        trailer.name.includes('official') ||
+        trailer.name.includes('trailer')
+      ) {
+        return trailer;
+      } else if (
+        trailer.name.includes('teaser') ||
+        trailer.name.includes('Teaser')
+      ) {
+        return trailer;
+      } else if (trailer.type === 'Trailer') {
+        return trailer;
+      }
+    });
+
+    console.log(trailerResult.key);
+    offTrailer = trailerResult.key;
+  }
+
+  refs.movieCard.innerHTML = renderSingleMovieCard(movieInfo, offTrailer);
   //   refs.commonDiv.classList.add('hidden');
   //   const modalWin = new SimpleLightbox('.photo-card a', {
   //     captionsData: 'alt',
@@ -256,14 +352,15 @@ async function renderMoviecard(filmID) {
 {
   /* <article class='col-4 col-lg-3 col-xl-2 p-1 photo-card'></article> */
 }
-function renderSingleMovieCard(movieInfo) {
+function renderSingleMovieCard(movieInfo, offTrailer) {
   return `<article class='photo-card'><a href="${
     IMAGE_BASE_URL + movieInfo.poster_path
   }""><img src="${IMAGE_BASE_URL + movieInfo.poster_path}" alt="${
     movieInfo.original_title
   }" id ="${movieInfo.id}" class="img-fluid" >${
     movieInfo.overview
-  }</a><article>`;
+  }</a><article> 
+  <iframe width="560" height="315" src="https://www.youtube.com/embed/${offTrailer}" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>`;
 }
 
 // function showImages(event) {
@@ -280,4 +377,80 @@ function renderSingleMovieCard(movieInfo) {
 //       receivedDatas(response);
 //     })
 //     .catch(error => console.log(error.message));
+// }
+
+// Sergey Korobka, [11.07.2022 18:16]
+// export async function createIframe(idMovie) {
+//   showLoader();
+//   const dataTrailer = await getTrailer(idMovie);
+
+//   const trailerName = dataTrailer.results.find(trailer => {
+//     const nameNormalized = trailer.name.toLowerCase();
+//     const findArr = ['official', 'trailer', 'официальный', 'офіційний'];
+
+//     const isIqual = findArr.some(el => nameNormalized.includes(el));
+
+//     if (isIqual) {
+//       return true;
+//     } else {
+//       return false;
+//     }
+//   });
+
+//   const teaserName = dataTrailer.results.find(trailer => {
+//     const nameNormalized = trailer.name.toLowerCase();
+//     const findArr = ['teaser', 'тизер'];
+
+//     const isIqual = findArr.some(el => nameNormalized.includes(el));
+
+//     if (isIqual) {
+//       return true;
+//     } else {
+//       return false;
+//     }
+//   });
+
+//   const trailerType = dataTrailer.results.find(trailer => {
+//     const nameNormalized = trailer.type.toLowerCase();
+//     const find = 'trailer';
+
+//     if (nameNormalized === find) {
+//       return true;
+//     } else {
+//       return false;
+//     }
+//   });
+
+//   const teaserType = dataTrailer.results.find(trailer => {
+//     const nameNormalized = trailer.type.toLowerCase();
+//     const find = 'teaser';
+
+//     if (nameNormalized === find) {
+//       return true;
+//     } else {
+//       return false;
+//     }
+//   });
+
+//   const any = dataTrailer.results.find(el => el.key);
+
+//   const trailer = trailerName  teaserName  trailerType  teaserType  any;
+
+//   if (!trailer) {
+//     notify('Sorry, trailer not found');
+//     hideLoader();
+//     return;
+//   }
+
+//   const markup = `
+//   <iframe width="800" height="420" src="https://www.youtube.com/embed/${trailer.key}"
+//     title="YouTube video player" frameborder="0"
+//     allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+//     allowfullscreen>
+//   </iframe>`;
+
+//   modalTrailerRef.modalTrailer.innerHTML = markup;
+
+//   hideLoader();
+//   onOpenModal();
 // }
